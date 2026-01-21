@@ -16,11 +16,11 @@ final class AppCoordinator: ObservableObject, AppCoordinating {
 
     @Published private var flow: Flow = .auth
 
-    private let authProvider: AuthProviding
+    private let authManager: AuthManager
     private var cancellables = Set<AnyCancellable>()
 
-    init(authProvider: AuthProviding) {
-        self.authProvider = authProvider
+    init(authManager: AuthManager) {
+        self.authManager = authManager
         observeAuthState()
     }
 
@@ -28,20 +28,21 @@ final class AppCoordinator: ObservableObject, AppCoordinating {
         switch flow {
         case .auth:
             return AnyView(
-                AuthCoordinatorView(coordinator: AuthCoordinator(authProvider: self.authProvider), authProvider: authProvider)
+                AuthCoordinatorView(coordinator: AuthCoordinator(authProvider: self.authManager), authProvider: authManager)
             )
 
         case .main:
             return AnyView(
                 MainCoordinatorView(
-                    coordinator: MainCoordinator()
+                    coordinator: MainCoordinator(),
+                    authManager: authManager
                 )
             )
         }
     }
 
     private func observeAuthState() {
-        (authProvider as? AuthManager)?
+        authManager
             .$isAuthenticated
             .removeDuplicates()
             .receive(on: RunLoop.main)

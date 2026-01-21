@@ -82,6 +82,7 @@ struct WindDTO: Decodable {
 
 struct SysDTO: Decodable {
     let pod: String?   // "d" or "n"
+    let country: String?
 }
 
 struct CityDTO: Decodable {

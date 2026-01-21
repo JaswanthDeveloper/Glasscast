@@ -17,12 +17,6 @@ struct SignupView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
 
-            Button(action: {}) {
-                Image(systemName: "chevron.left")
-                    .font(.title2)
-                    .foregroundColor(.black)
-            }
-
             VStack(alignment: .leading, spacing: 8) {
                 Text("Create Account")
                     .font(.largeTitle)

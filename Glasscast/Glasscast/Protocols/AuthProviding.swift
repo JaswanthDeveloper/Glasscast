@@ -6,10 +6,12 @@
 //
 
 import Supabase
+import Foundation
 
 @MainActor
 protocol AuthStateProviding {
     var isAuthenticated: Bool { get }
+    var currentUserId: UUID? { get async }
 }
 
 protocol AuthActionProviding {

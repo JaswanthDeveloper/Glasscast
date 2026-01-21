@@ -10,6 +10,7 @@ import SwiftUI
 struct MainCoordinatorView: View {
 
     @StateObject var coordinator: MainCoordinator
+    let authManager: AuthManager
 
     var body: some View {
         TabView(selection: $coordinator.selectedTab) {
@@ -20,23 +21,17 @@ struct MainCoordinatorView: View {
                 }
                 .tag(MainCoordinator.Tab.weather)
 
-            CitySearchView()
+            CitySearchView(authManager: authManager)
                 .tabItem {
                     Label("Cities", systemImage: "building.2")
                 }
                 .tag(MainCoordinator.Tab.cities)
 
-            SettingsView()
+            SettingsView(authActionProviding: authManager)
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
                 .tag(MainCoordinator.Tab.settings)
         }
-    }
-}
-
-struct SettingsView: View {
-    var body: some View {
-        Text("Settings Screen")
     }
 }

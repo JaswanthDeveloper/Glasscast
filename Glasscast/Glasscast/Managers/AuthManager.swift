@@ -7,6 +7,7 @@
 
 import Supabase
 import Combine
+import Foundation
 
 @MainActor
 final class AuthManager: ObservableObject, AuthProviding {
@@ -23,6 +24,12 @@ final class AuthManager: ObservableObject, AuthProviding {
         observeAuthChanges()
     }
 
+    var currentUserId: UUID? {
+        get async {
+            try? await supabase.auth.session.user.id
+        }
+    }
+    
     private func restoreSession() {
         Task { @MainActor in
             do {
@@ -65,12 +72,16 @@ final class AuthManager: ObservableObject, AuthProviding {
     }
 
     func signUp(email: String, password: String) async throws {
-        let response = try await supabase.auth.signUp(
+        let _ = try await supabase.auth.signUp(
             email: email,
             password: password
         )
+       /*
+        // Dont take inside the app -> Email verification is pending
+        
         session = response.session
         isAuthenticated = true
+        */
     }
     
     func signOut() async throws {
@@ -82,4 +93,42 @@ final class AuthManager: ObservableObject, AuthProviding {
     deinit {
         authTask?.cancel()
     }
+}
+
+extension AuthManager: FavoritesProviding {
+
+    func fetchFavorites(userId: UUID) async throws -> [CityWeather] {
+        let response: [FavoriteInsertDTO] = try await supabase.database
+                .from("favorite_cities")
+                .select()
+                .eq("user_id", value: userId)
+                .execute()
+                .value
+
+            return response.map { $0.toDomain() }
+        }
+    
+        func addFavorite(city: CityWeather, userId: UUID) async throws {
+            try await supabase.database
+                .from("favorite_cities")
+                .insert( FavoriteInsertDTO(
+                    id: city.id,
+                    user_id: userId,
+                    city_name: city.cityName,
+                    country: city.country,
+                    lat: city.lat,
+                    lon: city.lon
+                ))
+                .execute()
+        }
+
+    func removeFavorite(cityId: Int, userId: UUID) async throws {
+            try await supabase.database
+                .from("favorite_cities")
+                .delete()
+                .eq("user_id", value: userId)
+                .eq("id", value: cityId)
+                .execute()
+        }
+    
 }

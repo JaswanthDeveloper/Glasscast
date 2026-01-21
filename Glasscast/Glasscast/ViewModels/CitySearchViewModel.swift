@@ -17,9 +17,12 @@ final class CitySearchViewModel: ObservableObject {
 
     private let searchCityWeatherUseCase: SearchCityWeatherUseCase
     private var cancellables = Set<AnyCancellable>()
-
-    init(searchCityWeatherUseCase: SearchCityWeatherUseCase) {
+    var cityListViewModel: CityListViewModel
+    
+    init(searchCityWeatherUseCase: SearchCityWeatherUseCase,
+         cityListViewModel: CityListViewModel) {
         self.searchCityWeatherUseCase = searchCityWeatherUseCase
+        self.cityListViewModel = cityListViewModel
         bind()
     }
 

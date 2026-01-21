@@ -6,22 +6,33 @@
 //
 import SwiftUI
 
-import SwiftUI
-
 struct CitySearchView: View {
 
+    @EnvironmentObject var temperatureManager: TemperatureManager
     @StateObject private var viewModel: CitySearchViewModel
-
-    init() {
+    let authManager: AuthManager
+   
+    @StateObject private var cityListViewModel: CityListViewModel
+    
+    init(authManager: AuthManager) {
         let apiService = WeatherAPIImpl()
         let repository = SearchCityWeatherRepositoryImpl(api: apiService)
         let useCase = SearchCityWeatherUseCaseImpl(repository: repository)
-
+        
+        let cityListViewModel = CityListViewModel(addFavoriteUseCase: AddFavoriteCityUseCaseImpl(authProvider: authManager,
+                                                                                                 favoritesProvider: authManager),
+                                                  removeFavoriteCityUseCase: RemoveFavoriteCityUseCaseImpl(authProvider: authManager,
+                                                                                                           favoritesProvider: authManager),
+                                                  getFavoritesUseCase: GetFavoriteCitiesUseCaseImpl(authProvider: authManager,
+                                                                                                    favoritesProvider: authManager))
+        _cityListViewModel = StateObject(wrappedValue: cityListViewModel)
         _viewModel = StateObject(
             wrappedValue: CitySearchViewModel(
-                searchCityWeatherUseCase: useCase
+                searchCityWeatherUseCase: useCase,
+                cityListViewModel: cityListViewModel
             )
         )
+        self.authManager = authManager
     }
 
     var body: some View {
@@ -29,10 +40,8 @@ struct CitySearchView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
 
-                    // 🔍 Search Bar
                     SearchBar(text: $viewModel.searchText)
 
-                    // 🔎 Search Result Section
                     if viewModel.isLoading {
                         loadingView
                     } else if let weather = viewModel.cityWeather {
@@ -40,8 +49,19 @@ struct CitySearchView: View {
                     } else if viewModel.searchText.count >= 2 {
                         emptyStateView
                     }
+                    if !cityListViewModel.favoriteCities.isEmpty {
+                        FavoritesSectionView(
+                            favoriteCities: cityListViewModel.favoriteCities,
+                            onRemove: { city in
+                                Task {
+                                    cityListViewModel.removeFavorite(city: city)
+                                }
+                            }
+                        )
+                    }
                 }
                 .padding(.top)
+                
             }
             .navigationTitle("Search City")
         }
@@ -50,6 +70,11 @@ struct CitySearchView: View {
                 viewModel.cityWeather = nil // Clear previous result
             }
         })
+        .onAppear {
+            Task {
+                await cityListViewModel.loadFavorites()
+            }
+        }
     }
 }
 
@@ -89,11 +114,14 @@ private extension CitySearchView {
     func resultView(_ weather: CityWeather) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Search Result")
-                .font(.headline)
+                .font(.title3)
+                .fontWeight(.bold)
                 .padding(.horizontal)
-
-            WeatherResultView(weather: weather)
-                .padding(.horizontal)
+            
+            WeatherResultView(weather: weather,
+                              cityListViewModel: viewModel.cityListViewModel)
+            .padding(.horizontal)
+            
         }
     }
 }

@@ -14,8 +14,6 @@ struct CityWeather: Identifiable {
     let country: String
     let iconName: String
     let time: String
-
-    var formattedMeta: String {
-        "\(country) · \(time) · \(Int(temperature))°C · \(condition)"
-    }
+    let lat: Double
+    let lon: Double
 }

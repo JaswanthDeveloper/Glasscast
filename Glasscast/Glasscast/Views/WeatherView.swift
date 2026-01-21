@@ -8,6 +8,7 @@ import SwiftUI
 
 struct WeatherView: View {
 
+    @EnvironmentObject var temperatureManager: TemperatureManager
     @StateObject private var viewModel: WeatherViewModel
 
     init() {

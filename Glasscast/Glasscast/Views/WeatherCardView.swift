@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct WeatherCardView: View {
+    
+    @EnvironmentObject var temperatureManager: TemperatureManager
     let forecast: WeatherForecast
 
     var body: some View {
@@ -26,7 +28,7 @@ struct WeatherCardView: View {
                 Text(forecast.description.capitalized)
                     .font(.headline)
 
-                Text("\(Int(forecast.minTemperature))°C - \(Int(forecast.minTemperature))°C")
+                Text("\(temperatureManager.format(forecast.minTemperature)) - \(temperatureManager.format(forecast.maxTemperature))")
                     .font(.title3)
                     .bold()
             }

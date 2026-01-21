@@ -29,8 +29,10 @@ extension CityWeatherResponseDTO {
                     cityName: name,
                     condition: weather.first?.description ?? "",
                     temperature: main.temp,
-                    country: sys.pod ?? "",
+                    country: sys.country ?? "",
                     iconName: weather.first?.icon ?? "",
-                    time: dt.toDateString())
+                    time: dt.toDateString(),
+                    lat: coord.lat,
+                    lon: coord.lon)
     }
 }
